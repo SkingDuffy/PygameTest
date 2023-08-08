@@ -235,7 +235,7 @@ while running:
 			bullets.remove(bullet)
 		except ValueError:
 			print("not find bullet id = ", id(bullet))
-			for b in bullets_to_remove: print("need remove id = ", id(b))
+			for b in bullets_to_remove: print("need remove bullet id = ", id(b))
 			pass
 	
 	for enemy in enemies_to_remove:
@@ -243,7 +243,7 @@ while running:
 			enemies.remove(enemy)
 		except ValueError:
 			print("not find enemy id = ", id(enemy))
-			for e in enemies_to_remove: print("need remove id = ", id(e))
+			for e in enemies_to_remove: print("need remove enemy id = ", id(e))
 			pass
 
 	# 绘制背景
