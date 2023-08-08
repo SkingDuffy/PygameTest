@@ -19,8 +19,6 @@ tank_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/tank.png')
 bullet_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/bullet.png')
 # 加载敌人图像
 enemy_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/enemy.png')
-# 加载墙壁图像
-wall_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/map.png')
 
 # 加载射击声音效
 shoot_sound = pygame.mixer.Sound('/Users/fmq/GolandProjects/PygameTest/launch.wav')
@@ -32,17 +30,19 @@ tank_x = window_width // 2
 tank_y = window_height // 2
 
 # 设置坦克的移动速度
-tank_speed = 2
+tank_speed = 5
 
 # 设置子弹的尺寸和移动速度
-bullet_width = 10
-bullet_height = 5
-bullet_speed = 3
+bullet_width = 100
+bullet_height = 100
+bullet_speed = 10
 
 # 自定义子弹类
 class Bullet:
 	def __init__(self, x, y, direction):
-		self.rect = pygame.Rect(x, y, bullet_width, bullet_height)
+		# self.original_image = bullet_image  # 保留原始图像
+		# self.image = pygame.transform.scale(self.original_image, (bullet_width, bullet_height))
+		self.rect = bullet_image.get_rect(center=(x, y))
 		self.direction = direction
 
 	def move(self):
@@ -64,17 +64,6 @@ class Bullet:
 # 子弹列表
 bullets = []
 
-# 创建地图数组，用于表示游戏地图
-game_map = [
-	[1, 1, 1, 1, 1],
-	[1, 0, 0, 0, 1],
-	[1, 0, 1, 0, 1],
-	[1, 0, 0, 0, 1],
-	[1, 1, 1, 1, 1]
-]
-
-# 图块大小
-tile_size = 100
 # 上一次的方向
 last_direction = "UP"
 
@@ -98,57 +87,57 @@ class Enemy:
 # 创建敌人列表
 enemies = []
 
+# 创建 Clock 对象
+clock = pygame.time.Clock()
+
 # 游戏主循环
 running = True
+paused = False  # 添加暂停状态变量
 while running:
+
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			running = False
 		elif event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_RETURN:
+				paused = not paused
 			# 按下空格键发射子弹
-			if event.key == pygame.K_SPACE:
-				print("tank_x_speed = ", tank_x_speed, "tank_y_speed = ", tank_y_speed)
+			if event.key == pygame.K_SPACE and not paused:
+				print("tank_x_speed = ", tank_x_speed, "tank_y_speed = ", tank_y_speed, "last_direction = ", last_direction)
 				# 添加新子弹到子弹列表，根据坦克的移动方向设置子弹的射击方向
-				# if tank_x_speed < 0:
-				# 	last_direction = "LEFT"
-				# 	bullets.append(Bullet(tank_x, tank_y + tank_image.get_height() // 2, "LEFT"))
-				# elif tank_x_speed > 0:
-				# 	last_direction = "RIGHT"
-				# 	bullets.append(Bullet(tank_x + tank_image.get_width(), tank_y + tank_image.get_height() // 2, "RIGHT"))
-				# elif tank_y_speed < 0:
-				last_direction = "UP"
-				bullets.append(Bullet(tank_x + (tank_image.get_width() - bullet_image.get_width()) // 2, tank_y, "UP"))
-				# elif tank_y_speed > 0:
-				# 	last_direction = "DOWN"
-				# 	bullets.append(Bullet(tank_x + tank_image.get_width() // 2, tank_y + tank_image.get_height(), "DOWN"))
-				# else:
-				# 	# 如果坦克静止，则根据当前坦克位置设置子弹的射击方向
-				# 	if last_direction == "LEFT":
-				# 		last_bullet = Bullet(tank_x, tank_y + tank_image.get_height() // 2, "LEFT")
-				# 	elif last_direction == "RIGHT":
-				# 		last_bullet = Bullet(tank_x + tank_image.get_width(), tank_y + tank_image.get_height() // 2, "RIGHT")
-				# 	elif last_direction == "UP":
-				# 		last_bullet = Bullet(tank_x + tank_image.get_width() // 2, tank_y, "UP")
-				# 	elif last_direction == "DOWN":
-				# 		last_bullet = Bullet(tank_x + tank_image.get_width() // 2, tank_y + tank_image.get_height(), "DOWN")
-				# 	bullets.append(last_bullet)
+				if last_direction == "LEFT":
+					last_bullet = Bullet(tank_x, tank_y + tank_image.get_height() // 2, "LEFT")
+				elif last_direction == "RIGHT":
+					last_bullet = Bullet(tank_x + tank_image.get_width(), tank_y + tank_image.get_height() // 2, "RIGHT")
+				elif last_direction == "UP":
+					last_bullet = Bullet(tank_x + tank_image.get_width() // 2, tank_y, "UP")
+				elif last_direction == "DOWN":
+					last_bullet = Bullet(tank_x + tank_image.get_width() // 2, tank_y + tank_image.get_height(), "DOWN")
+				bullets.append(last_bullet)
 				# 播放射击声音效
-				shoot_sound.play()
-
+				shoot_sound.play()	
+	
+	if paused:
+		continue
+	
 	# 获取按键状态
 	keys = pygame.key.get_pressed()
 	# 根据按键状态移动坦克
 	if keys[pygame.K_LEFT]:
 		tank_x_speed = -tank_speed
+		last_direction = "LEFT"
 	elif keys[pygame.K_RIGHT]:
 		tank_x_speed = tank_speed
+		last_direction = "RIGHT"
 	else:
 		tank_x_speed = 0
 
 	if keys[pygame.K_UP]:
 		tank_y_speed = -tank_speed
+		last_direction = "UP"
 	elif keys[pygame.K_DOWN]:
 		tank_y_speed = tank_speed
+		last_direction = "DOWN"
 	else:
 		tank_y_speed = 0
 
@@ -170,31 +159,30 @@ while running:
 		
 	# 随机生成新敌人
 	if random.randint(1, 100) < 2:  # 控制生成敌人的频率
-		# side = random.choice(['top', 'bottom', 'left', 'right'])
-		# if side == 'top':
-		x = random.randint(0, window_width)
-		y = 0
-		speed_x = 0
-		# speed_y = random.randint(1, 3)
-		speed_y = 1
-		# elif side == 'bottom':
-		# 	x = random.randint(0, window_width)
-		# 	y = window_height
-		# 	speed_x = 0
-		# 	# speed_y = random.randint(-3, -1)
-		# 	speed_y = -1
-		# elif side == 'left':
-		# 	x = 0
-		# 	y = random.randint(0, window_height)
-		# 	# speed_x = random.randint(1, 3)
-		# 	speed_x = 1
-		# 	speed_y = 0
-		# elif side == 'right':
-		# 	x = window_width
-		# 	y = random.randint(0, window_height)
-		# 	# speed_x = random.randint(-3, -1)
-		# 	speed_x = -1
-		# 	speed_y = 0
+		side = random.choice(['top', 'bottom', 'left', 'right'])
+		if side == 'top':
+			x = random.randint(0, window_width)
+			y = 0
+			speed_x = 0
+			speed_y = random.randint(1, 3)
+		elif side == 'bottom':
+			x = random.randint(0, window_width)
+			y = window_height
+			speed_x = 0
+			# speed_y = random.randint(-3, -1)
+			speed_y = -1
+		elif side == 'left':
+			x = 0
+			y = random.randint(0, window_height)
+			# speed_x = random.randint(1, 3)
+			speed_x = 1
+			speed_y = 0
+		elif side == 'right':
+			x = window_width
+			y = random.randint(0, window_height)
+			# speed_x = random.randint(-3, -1)
+			speed_x = -1
+			speed_y = 0
 
 		new_enemy = Enemy(x, y, speed_x, speed_y)
 		enemies.append(new_enemy)
@@ -233,16 +221,15 @@ while running:
 		bullets.remove(bullet)
 	
 	for enemy in enemies_to_remove:
-		enemies.remove(enemy)
+		try:
+			enemies.remove(enemy)
+		except ValueError:
+			print("not find id = ", id(enemy))
+			for e in enemies_to_remove: print("need remove id = ", id(e))
+			pass
 
 	# 绘制背景
 	screen.fill((155, 155, 155))
-
-	# 绘制地图
-	for row in range(len(game_map)):
-		for col in range(len(game_map[row])):
-			if game_map[row][col] == 1:
-				screen.blit(wall_image, (col * tile_size, row * tile_size))
 
 	# 绘制坦克
 	screen.blit(tank_image, (tank_x, tank_y))
@@ -255,8 +242,12 @@ while running:
 	for bullet in bullets:
 		bullet.draw(screen)
 
+	# 控制帧率
+	clock.tick(60)  # 设置刷新帧率为 60 帧/秒
+	# 更新屏幕
+	pygame.display.flip()
 	# 刷新窗口
-	pygame.display.update()
+	# pygame.display.update()
 
 # 退出Pygame
 pygame.quit()
