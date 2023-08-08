@@ -5,8 +5,8 @@ import random
 pygame.init()
 
 # 设置窗口大小和标题
-window_width = 1200
-window_height = 1000
+window_width = 1400
+window_height = 800
 window_title = "坦克大战游戏"
 
 # 创建游戏窗口
@@ -19,6 +19,8 @@ tank_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/tank.png')
 bullet_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/bullet.png')
 # 加载敌人图像
 enemy_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/enemy.png')
+# 加载背景图像
+bg_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/map.png')
 
 # 加载射击声音效
 shoot_sound = pygame.mixer.Sound('/Users/fmq/GolandProjects/PygameTest/launch.wav')
@@ -90,6 +92,13 @@ enemies = []
 # 创建 Clock 对象
 clock = pygame.time.Clock()
 
+def rotate_tank(tank_image, tank_angle, tank_x, tank_y):
+    # 旋转坦克图像
+    rotated_tank = pygame.transform.rotate(tank_image, tank_angle)
+    rotated_tank_rect = rotated_tank.get_rect(center=(tank_x, tank_y))
+    return rotated_tank_rect
+tank_angle = 0
+
 # 游戏主循环
 running = True
 paused = False  # 添加暂停状态变量
@@ -126,18 +135,22 @@ while running:
 	if keys[pygame.K_LEFT]:
 		tank_x_speed = -tank_speed
 		last_direction = "LEFT"
+		tank_angle = 90
 	elif keys[pygame.K_RIGHT]:
 		tank_x_speed = tank_speed
 		last_direction = "RIGHT"
+		tank_angle = 270
 	else:
 		tank_x_speed = 0
 
 	if keys[pygame.K_UP]:
 		tank_y_speed = -tank_speed
 		last_direction = "UP"
+		tank_angle = 0
 	elif keys[pygame.K_DOWN]:
 		tank_y_speed = tank_speed
 		last_direction = "DOWN"
+		tank_angle = 180
 	else:
 		tank_y_speed = 0
 
@@ -218,21 +231,34 @@ while running:
 			
 	# 移除碰撞的子弹和敌人
 	for bullet in bullets_to_remove:
-		bullets.remove(bullet)
+		try:
+			bullets.remove(bullet)
+		except ValueError:
+			print("not find bullet id = ", id(bullet))
+			for b in bullets_to_remove: print("need remove id = ", id(b))
+			pass
 	
 	for enemy in enemies_to_remove:
 		try:
 			enemies.remove(enemy)
 		except ValueError:
-			print("not find id = ", id(enemy))
+			print("not find enemy id = ", id(enemy))
 			for e in enemies_to_remove: print("need remove id = ", id(e))
 			pass
 
 	# 绘制背景
-	screen.fill((155, 155, 155))
+	screen.fill((0, 0, 0))
+	scale = max(window_width / bg_image.get_width(), window_height / bg_image.get_height())  # 计算缩放比例
+	scaled_bg = pygame.transform.scale(bg_image, (int(bg_image.get_width() * scale), int(bg_image.get_height() * scale)))  # 缩放图像
+	screen.blit(scaled_bg, scaled_bg.get_rect(center=(window_width // 2, window_height // 2)))
+	
+	# 旋转坦克图像
+	rotated_tank = pygame.transform.rotate(tank_image, tank_angle)
+	rotated_tank_rect = rotated_tank.get_rect(topleft=(tank_x, tank_y))
 
 	# 绘制坦克
-	screen.blit(tank_image, (tank_x, tank_y))
+	# screen.blit(tank_image, (tank_x, tank_y))
+	screen.blit(rotated_tank, rotated_tank_rect)
 		
 	# 绘制敌人
 	for enemy in enemies:
