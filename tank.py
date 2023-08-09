@@ -1,5 +1,7 @@
 import pygame
 import random
+import os
+import sys
 
 # 初始化Pygame
 pygame.init()
@@ -13,19 +15,35 @@ window_title = "坦克大战游戏"
 screen = pygame.display.set_mode((window_width, window_height), pygame.DOUBLEBUF)
 pygame.display.set_caption(window_title)
 
+# 获取当前文件所在的绝对路径
+current_path = os.path.dirname(__file__)
+current_path2 = os.path.dirname(os.path.abspath(__file__))
+current_path3 = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
+# current_path = 'C:/Users/fmq/Documents/HBuilderProjects/PygameTest'
+print("当前文件所在路径:", current_path, ", path2 = ", current_path2, ", path3 = ", current_path3)
 # 加载坦克图像
-tank_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/tank.png')
+# tank_image = pygame.image.load(os.path.join(current_path, 'tank.png'))
 # 加载子弹图像
-bullet_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/bullet.png')
-# 加载敌人图像
-enemy_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/enemy.png')
-# 加载背景图像
-bg_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/map.png')
+# bullet_image = pygame.image.load(os.path.join(current_path, 'bullet.png'))
+# # 加载敌人图像
+# enemy_image = pygame.image.load(os.path.join(current_path, 'enemy.png'))
+# # 加载背景图像
+# bg_image = pygame.image.load(os.path.join(current_path, 'map.png'))
 
-# 加载射击声音效
-shoot_sound = pygame.mixer.Sound('/Users/fmq/GolandProjects/PygameTest/launch.wav')
-# 加载爆炸声音效
-explosion_sound = pygame.mixer.Sound('/Users/fmq/GolandProjects/PygameTest/score.wav')
+# # 加载射击声音效
+# shoot_sound = pygame.mixer.Sound(os.path.join(current_path, 'launch.wav'))
+# # 加载爆炸声音效
+# score_sound = pygame.mixer.Sound(os.path.join(current_path, 'score.wav'))
+# # 加载坦克阵亡音效
+# dead_sound = pygame.mixer.Sound(os.path.join(current_path, 'dead.wav'))
+
+tank_image = pygame.image.load('tank.png')
+bullet_image = pygame.image.load('bullet.png')
+enemy_image = pygame.image.load('enemy.png')
+bg_image = pygame.image.load('map.png')
+shoot_sound = pygame.mixer.Sound('launch.wav')
+score_sound = pygame.mixer.Sound('score.wav')
+dead_sound = pygame.mixer.Sound('dead.wav')
 
 # 设置坦克的初始位置
 tank_x = window_width // 2
@@ -99,10 +117,19 @@ def rotate_tank(tank_image, tank_angle, tank_x, tank_y):
     return rotated_tank_rect
 tank_angle = 0
 
+# 设置字体
+font = pygame.font.Font(None, 36)  # 使用默认字体和字号
+# 初始化得分
+score = 0
+level = 0
+dead = 0
+
 # 游戏主循环
 running = True
 paused = False  # 添加暂停状态变量
 while running:
+
+	level = score // 10
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -171,30 +198,27 @@ while running:
 		bullet.move()
 		
 	# 随机生成新敌人
-	if random.randint(1, 100) < 2:  # 控制生成敌人的频率
+	if random.randint(1, 100) < 2 + level:  # 控制生成敌人的频率
 		side = random.choice(['top', 'bottom', 'left', 'right'])
 		if side == 'top':
 			x = random.randint(0, window_width)
 			y = 0
 			speed_x = 0
-			speed_y = random.randint(1, 3)
+			speed_y = random.randint(1, 3 + level)
 		elif side == 'bottom':
 			x = random.randint(0, window_width)
 			y = window_height
 			speed_x = 0
-			# speed_y = random.randint(-3, -1)
-			speed_y = -1
+			speed_y = random.randint(-3 - level, -1)
 		elif side == 'left':
 			x = 0
 			y = random.randint(0, window_height)
-			# speed_x = random.randint(1, 3)
-			speed_x = 1
+			speed_x = random.randint(1, 3 + level)
 			speed_y = 0
 		elif side == 'right':
 			x = window_width
 			y = random.randint(0, window_height)
-			# speed_x = random.randint(-3, -1)
-			speed_x = -1
+			speed_x = random.randint(-3 - level, -1)
 			speed_y = 0
 
 		new_enemy = Enemy(x, y, speed_x, speed_y)
@@ -212,9 +236,10 @@ while running:
 		for enemy in enemies:
 			if bullet.rect.colliderect(enemy.rect):
 				print("子弹击中敌人")
+				score += 1  # 更新得分
 				bullets_to_remove.append(bullet)
 				enemies_to_remove.append(enemy)
-				explosion_sound.play()
+				score_sound.play()
 	# print("enemies size:", len(enemies), "bullets size:", len(bullets))
 		
 	# 坦克rect
@@ -225,8 +250,9 @@ while running:
 		if tank_rect.colliderect(enemy.rect):
 			# 在这里可以处理坦克与敌人碰撞的情况，比如游戏结束等
 			print("坦克撞击敌人")
+			dead += 1  # 更新得分
 			enemies_to_remove.append(enemy)
-			explosion_sound.play()
+			dead_sound.play()
 			pass
 			
 	# 移除碰撞的子弹和敌人
@@ -267,6 +293,20 @@ while running:
 	# 绘制子弹
 	for bullet in bullets:
 		bullet.draw(screen)
+		
+	# 渲染得分文本
+	score_text = font.render(f"Score: {score}", True, (255, 255, 255))  # 白色字体
+	score_rect = score_text.get_rect()
+	score_rect.topleft = (10, 10)  # 文本位置在窗口左上角
+	screen.blit(score_text, score_rect)
+	level_text = font.render(f"Level: {level}", True, (255, 255, 255))  # 白色字体
+	level_rect = score_text.get_rect()
+	level_rect.topleft = (10, 10 + score_rect.bottom)  # 文本位置在窗口左上角
+	screen.blit(level_text, level_rect)
+	dead_text = font.render(f"Dead: {dead}", True, (255, 255, 255))  # 白色字体
+	dead_rect = dead_text.get_rect()
+	dead_rect.topright = (window_width - 10, 10)  # 文本位置在窗口右上角
+	screen.blit(dead_text, dead_rect)
 
 	# 控制帧率
 	clock.tick(60)  # 设置刷新帧率为 60 帧/秒
