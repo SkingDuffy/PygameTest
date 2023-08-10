@@ -1,7 +1,11 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
 import pygame
 import random
 import os
 import sys
+from dialog import Dialog
+
 
 # 初始化Pygame
 pygame.init()
@@ -118,24 +122,65 @@ def rotate_tank(tank_image, tank_angle, tank_x, tank_y):
 tank_angle = 0
 
 # 设置字体
-font = pygame.font.Font(None, 36)  # 使用默认字体和字号
+font_path = "/System/Library/Fonts/PingFang.ttc"  # 选择一个支持中文的字体文件路径
+font = pygame.font.Font(font_path, 36)  # 使用默认字体和字号
+
 # 初始化得分
 score = 0
 level = 0
 dead = 0
+rank_list = ""
+
 
 # 游戏主循环
 running = True
 paused = False  # 添加暂停状态变量
+
+def update_x(new_paused):
+	global paused  # 使用global关键字，指示使用全局变量
+	paused = new_paused
+	print("Updated x = ", paused)
+
+# 创建一个用于存储每行渲染文本的列表
+rendered_lines = []
+
+def update_y(new_rank):
+	global rank_list, rendered_lines
+	rendered_lines = []
+	for user in new_rank:
+		# rank_list += '\n' + user.user_name
+		# print("rank_list = ", user.user_name)
+		line_text = f"{user['user_name']}  得分: {user['score']}"
+		rendered_line = font.render(line_text, True, (255, 255, 255))
+		rendered_lines.append(rendered_line)
+
+# 创建弹框实例,,把函数 update_x 作为参数传入
+dialog = Dialog(screen, 300, 200, update_x, update_y)
+
 while running:
 
 	level = score // 10
 
 	for event in pygame.event.get():
+		dialog.handle_event(event)
 		if event.type == pygame.QUIT:
 			running = False
-		elif event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_RETURN:
+		# if event.type == pygame.MOUSEBUTTONDOWN:
+		# 	if dialog.is_save_clicked(event.pos):
+				# print("Save Clicked")
+				# rank_list = dialog.get_text()
+				# print("Input Text:", rank_list)
+				# dialog.clear_text()
+		if event.type == pygame.KEYDOWN:
+			# if event.key == pygame.K_RETURN:
+			# 	rank_list = dialog.get_text()
+			# 	dialog.clear_text()
+			# 	print("Input Text:", rank_list)
+
+			# if event.key == pygame.K_1:
+			# 	dialog.draw_save()
+
+			if event.key == pygame.K_p:
 				paused = not paused
 			# 按下空格键发射子弹
 			if event.key == pygame.K_SPACE and not paused:
@@ -154,6 +199,12 @@ while running:
 				shoot_sound.play()	
 	
 	if paused:
+		if dialog.active:  # 是否绘制弹框
+			dialog.draw()
+		# 控制帧率
+		clock.tick(60)  # 设置刷新帧率为 60 帧/秒
+		# 更新屏幕
+		pygame.display.flip()
 		continue
 	
 	# 获取按键状态
@@ -253,6 +304,7 @@ while running:
 			dead += 1  # 更新得分
 			enemies_to_remove.append(enemy)
 			dead_sound.play()
+			dialog.draw_upload(str(score))
 			pass
 			
 	# 移除碰撞的子弹和敌人
@@ -299,14 +351,33 @@ while running:
 	score_rect = score_text.get_rect()
 	score_rect.topleft = (10, 10)  # 文本位置在窗口左上角
 	screen.blit(score_text, score_rect)
+
+
+
 	level_text = font.render(f"Level: {level}", True, (255, 255, 255))  # 白色字体
 	level_rect = score_text.get_rect()
 	level_rect.topleft = (10, 10 + score_rect.bottom)  # 文本位置在窗口左上角
 	screen.blit(level_text, level_rect)
 	dead_text = font.render(f"Dead: {dead}", True, (255, 255, 255))  # 白色字体
 	dead_rect = dead_text.get_rect()
-	dead_rect.topright = (window_width - 10, 10)  # 文本位置在窗口右上角
+	dead_rect.topleft = (10, 10 + level_rect.bottom)  # 文本位置在窗口右上角
 	screen.blit(dead_text, dead_rect)
+
+	# rank_text = font.render(f"Rank Board: {rank_list}", True, (255, 255, 255))  # 白色字体
+	# rank_rect = dead_text.get_rect()
+	# rank_rect.topleft = (window_width - rank_text.get_width() - 10, 10)  # 文本位置在窗口右上角
+	# screen.blit(rank_text, rank_rect)
+
+	# 计算总文本高度
+	total_text_height = sum(rendered.get_height() for rendered in rendered_lines)
+	# 绘制每行文本
+	y_pos = (window_height - total_text_height) // 2
+	for rendered in rendered_lines:
+		screen.blit(rendered, ((window_width - rendered.get_width()) // 2, y_pos))
+		y_pos += rendered.get_height()
+
+	if dialog.active:  # 是否绘制弹框
+		dialog.draw()
 
 	# 控制帧率
 	clock.tick(60)  # 设置刷新帧率为 60 帧/秒
@@ -317,4 +388,3 @@ while running:
 
 # 退出Pygame
 pygame.quit()
-
