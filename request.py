@@ -3,7 +3,8 @@ from model import UserData
 
 
 def send_post_request(name, score, callback):
-    url = 'http://127.0.0.1:6600/api/score'
+    # url = 'http://127.0.0.1:6600/api/score'
+    url = 'http://101.200.131.69:80/api/score'
     data = {'name': name, 'score': score}
 
     response = requests.post(url, data)

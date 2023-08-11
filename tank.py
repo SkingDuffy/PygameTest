@@ -11,8 +11,8 @@ from dialog import Dialog
 pygame.init()
 
 # 设置窗口大小和标题
-window_width = 1400
-window_height = 800
+window_width = 1800
+window_height = 1000
 window_title = "坦克大战游戏"
 
 # 创建游戏窗口
@@ -147,10 +147,12 @@ rendered_lines = []
 def update_y(new_rank):
 	global rank_list, rendered_lines
 	rendered_lines = []
-	for user in new_rank:
+	rendered_line0 = font.render('超级排行榜', True, (255, 255, 255))
+	rendered_lines.append(rendered_line0)
+	for i, user in enumerate(new_rank, start=1):
 		# rank_list += '\n' + user.user_name
 		# print("rank_list = ", user.user_name)
-		line_text = f"{user['user_name']}  得分: {user['score']}"
+		line_text = f"第{i}名：{user['user_name']} - 得分：{user['score']}"
 		rendered_line = font.render(line_text, True, (255, 255, 255))
 		rendered_lines.append(rendered_line)
 
@@ -304,7 +306,8 @@ while running:
 			dead += 1  # 更新得分
 			enemies_to_remove.append(enemy)
 			dead_sound.play()
-			dialog.draw_upload(str(score))
+			if dead == 1:
+				dialog.draw_upload(str(score))
 			pass
 			
 	# 移除碰撞的子弹和敌人
