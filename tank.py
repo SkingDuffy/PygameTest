@@ -41,13 +41,13 @@ print("当前文件所在路径:", current_path, ", path2 = ", current_path2, ",
 # # 加载坦克阵亡音效
 # dead_sound = pygame.mixer.Sound(os.path.join(current_path, 'dead.wav'))
 
-tank_image = pygame.image.load('tank.png')
-bullet_image = pygame.image.load('bullet.png')
-enemy_image = pygame.image.load('enemy.png')
-bg_image = pygame.image.load('map.png')
-shoot_sound = pygame.mixer.Sound('launch.wav')
-score_sound = pygame.mixer.Sound('score.wav')
-dead_sound = pygame.mixer.Sound('dead.wav')
+tank_image = pygame.image.load('res/tank.png')
+bullet_image = pygame.image.load('res/bullet.png')
+enemy_image = pygame.image.load('res/enemy.png')
+bg_image = pygame.image.load('res/map.png')
+shoot_sound = pygame.mixer.Sound('res/launch.wav')
+score_sound = pygame.mixer.Sound('res/score.wav')
+dead_sound = pygame.mixer.Sound('res/dead.wav')
 
 # 设置坦克的初始位置
 tank_x = window_width // 2

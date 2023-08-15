@@ -14,18 +14,18 @@ screen = pygame.display.set_mode((window_width, window_height), pygame.DOUBLEBUF
 pygame.display.set_caption(window_title)
 
 # 加载坦克图像
-tank_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/tank.png')
+tank_image = pygame.image.load('/res/tank.png')
 # 加载子弹图像
-bullet_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/bullet.png')
+bullet_image = pygame.image.load('/res/bullet.png')
 # 加载敌人图像
-enemy_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/enemy.png')
+enemy_image = pygame.image.load('/res/enemy.png')
 # 加载墙壁图像
-wall_image = pygame.image.load('/Users/fmq/GolandProjects/PygameTest/map.png')
+wall_image = pygame.image.load('/res/map.png')
 
 # 加载射击声音效
-shoot_sound = pygame.mixer.Sound('/Users/fmq/GolandProjects/PygameTest/launch.wav')
+shoot_sound = pygame.mixer.Sound('/res/launch.wav')
 # 加载爆炸声音效
-explosion_sound = pygame.mixer.Sound('/Users/fmq/GolandProjects/PygameTest/score.wav')
+explosion_sound = pygame.mixer.Sound('/res/score.wav')
 
 # 设置坦克的初始位置
 tank_x = window_width // 2
